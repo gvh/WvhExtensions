@@ -1,4 +1,5 @@
 # WvhExtensions
 
-A description of this package.
+Contains all the Wvh common code
+
 # WvhExtensions

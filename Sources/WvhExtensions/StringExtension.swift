@@ -10,6 +10,14 @@ import Foundation
 import CommonCrypto
 
 public extension String {
+    func removePunctuation() -> String {
+        // All the characters to remove
+        let punctuationCharacterSet = NSMutableCharacterSet.punctuationCharacters
+        let arrayOfComponents = self.components(separatedBy: punctuationCharacterSet)
+        let output = arrayOfComponents.joined(separator: " ")
+        return output
+    }
+    
     var isNumber: Bool {
         return !isEmpty && rangeOfCharacter(from: CharacterSet.decimalDigits.inverted) == nil
     }
