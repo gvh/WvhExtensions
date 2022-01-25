@@ -10,6 +10,11 @@ import Foundation
 import CommonCrypto
 
 public extension String {
+    var urlEncoded: String? {
+        let allowedCharacterSet = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "~-_."))
+        return self.addingPercentEncoding(withAllowedCharacters: allowedCharacterSet)
+    }
+
     func removePunctuation() -> String {
         // All the characters to remove
         let punctuationCharacterSet = NSMutableCharacterSet.punctuationCharacters
