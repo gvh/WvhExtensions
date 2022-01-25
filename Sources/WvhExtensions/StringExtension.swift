@@ -10,9 +10,10 @@ import Foundation
 import CommonCrypto
 
 public extension String {
-    var urlEncoded: String? {
+
+    func getUrlEncoded() -> String {
         let allowedCharacterSet = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "~-_."))
-        return self.addingPercentEncoding(withAllowedCharacters: allowedCharacterSet)
+        return self.addingPercentEncoding(withAllowedCharacters: allowedCharacterSet)!
     }
 
     func removePunctuation() -> String {
