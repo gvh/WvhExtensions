@@ -9,6 +9,7 @@ import UIKit
 
 public extension UIViewController {
 
+    #if os(iOS)
     var deviceOrientation: UIDeviceOrientation {
 
         guard let window = view.window else { return .unknown }
@@ -24,5 +25,6 @@ public extension UIViewController {
 
         }
     }
+    #endif
 
 }
