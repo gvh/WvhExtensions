@@ -265,4 +265,13 @@ public extension String {
     var isNotEmpty: Bool {
         return !self.isEmpty
     }
+
+    var noPrefixName: String {
+        if self.count > 2 && self[0] != " " && self[1] == " " {
+            let startIndex = index(self.startIndex, offsetBy: 2)
+            return String(self[startIndex...])
+        } else {
+            return self
+        }
+    }
 }
