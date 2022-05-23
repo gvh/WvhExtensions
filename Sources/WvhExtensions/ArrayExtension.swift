@@ -20,4 +20,8 @@ public extension Array where Element: Hashable {
     mutating func removeDuplicates() {
         self = self.removingDuplicates()
     }
+
+    var isNotEmpty: Bool {
+        return !self.isEmpty
+    }
 }
