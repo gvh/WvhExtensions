@@ -274,4 +274,16 @@ public extension String {
             return self
         }
     }
+
+    func indexInt(of char: Character) -> Int? {
+        return firstIndex(of: char)?.utf16Offset(in: self)
+    }
+
+    func getDate(_ s: String) -> Date? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let date = dateFormatter.date (from: self)
+        return date
+    }
+
 }
