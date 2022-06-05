@@ -279,7 +279,7 @@ public extension String {
         return firstIndex(of: char)?.utf16Offset(in: self)
     }
 
-    func getDate(_ s: String) -> Date? {
+    func getDate() -> Date? {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let date = dateFormatter.date (from: self)
