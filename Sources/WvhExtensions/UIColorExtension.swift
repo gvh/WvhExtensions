@@ -5,6 +5,8 @@
 //  Created by Gardner von Holt on 8/20/21.
 //
 
+#if canImport(UIKit)
+
 import UIKit
 
 public extension UIColor {
@@ -47,3 +49,5 @@ public extension UIColor {
         return self
     }
 }
+
+#endif
