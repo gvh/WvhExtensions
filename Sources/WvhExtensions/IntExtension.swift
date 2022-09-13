@@ -82,3 +82,27 @@ public extension Int {
         }
     }
 }
+
+public extension Int {
+
+    private static var ordinalFormatter: NumberFormatter = {
+        let foramtter = NumberFormatter()
+        foramtter.numberStyle = .ordinal
+        return foramtter
+    }()
+
+    private static var commaFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        return formatter
+    }()
+
+    internal var commaRepresentation: String {
+        return Int.commaFormatter.string(from: NSNumber(value: self)) ?? ""
+    }
+
+    internal var ordinalRepresentation: String {
+        return Int.ordinalFormatter.string(from: NSNumber(value: self)) ?? ""
+    }
+
+}
