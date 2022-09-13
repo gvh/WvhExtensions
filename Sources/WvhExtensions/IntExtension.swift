@@ -97,11 +97,11 @@ public extension Int {
         return formatter
     }()
 
-    internal var commaRepresentation: String {
+    var commaRepresentation: String {
         return Int.commaFormatter.string(from: NSNumber(value: self)) ?? ""
     }
 
-    internal var ordinalRepresentation: String {
+    var ordinalRepresentation: String {
         return Int.ordinalFormatter.string(from: NSNumber(value: self)) ?? ""
     }
 
