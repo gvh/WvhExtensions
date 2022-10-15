@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension Calendar {
+public extension Calendar {
     func endOfDay(for forDate: Date) -> Date {
         let oneDay = TimeInterval((24.0 * 60.0 * 60.0) - 1.0)
         let endDate = self.startOfDay(for: forDate).addingTimeInterval(oneDay)
