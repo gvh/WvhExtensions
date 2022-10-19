@@ -288,7 +288,7 @@ public extension String {
 
 }
 
-extension Array<String> {
+public extension Array<String> {
     static let and: String = "and".localized
 
     func oxfordJoin(delimiter: String) -> String {
