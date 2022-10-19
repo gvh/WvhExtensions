@@ -287,3 +287,29 @@ public extension String {
     }
 
 }
+
+extension Array<String> {
+    static let and: String = "and".localized
+
+    func oxfordJoin(delimiter: String) -> String {
+        var temp: [String] = []
+        temp.append(contentsOf: self)
+        if temp.isEmpty {
+            let result = ""
+            return result
+        }
+
+        let last = temp.popLast()!
+        if temp.count > 1 {
+            let result = temp.joined(separator: delimiter) + delimiter.trimmingCharacters(in: .whitespacesAndNewlines) + " \(Array<String>.and) " + last
+            return result
+        } else if temp.count == 1 {
+            let result = (temp.first ?? "") + " \(Array<String>.and) " + last
+            return result
+        } else {
+            let result = last
+            return result
+        }
+    }
+
+}
