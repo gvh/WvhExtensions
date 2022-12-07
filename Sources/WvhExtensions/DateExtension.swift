@@ -185,4 +185,11 @@ public extension Date {
         return Calendar.current.dateComponents([.second], from: sinceDate, to: self).second
     }
 
+    func clearTime() -> Date {
+        let calendar = Calendar.current
+        var components = calendar.dateComponents([.day, .month, .year], from: self)
+        let tempDate = calendar.date(from: components)!
+        return tempDate
+    }
+
 }
