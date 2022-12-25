@@ -57,7 +57,7 @@ public extension Date {
 
     func dmyhmString() -> String {
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "d MMM yyyy"
+        dateFormatter.dateFormat = "d MMM yyyy HH:mm"
         dateFormatter.locale = Locale.current
         let formattedDate = dateFormatter.string(from: self)
         return formattedDate
