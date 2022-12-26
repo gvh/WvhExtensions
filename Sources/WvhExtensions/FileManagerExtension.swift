@@ -1,9 +1,9 @@
 //
 //  FileManagerExtension.swift
-//  WvhBigDates
+//  WvhExtensions
 //
 //  Created by Gardner von Holt on 12/12/19.
-//  Copyright © 2019 Gardner von Holt. All rights reserved.
+//  Copyright © 2019-2023 Gardner von Holt. All rights reserved.
 //
 
 import Foundation

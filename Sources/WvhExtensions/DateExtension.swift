@@ -1,9 +1,9 @@
 //
 //  DateExtension.swift
-//  VirtualRailfan
+//  WvhExtensions
 //
 //  Created by Gardner von Holt on 2015/Dec/14.
-//  Copyright © 2015-2018 Gardner von Holt. All rights reserved.
+//  Copyright © 2015-2023 Gardner von Holt. All rights reserved.
 //
 
 import Foundation

@@ -1,9 +1,9 @@
 //
 //  UIImageExtension.swift
-//  mediatransport
+//  WvhExtensions
 //
 //  Created by Gardner von Holt on 11/7/19.
-//  Copyright © 2019 Gardner von Holt. All rights reserved.
+//  Copyright © 2019-2023 Gardner von Holt. All rights reserved.
 //
 
 import UIKit

@@ -1,9 +1,9 @@
 //
 //  FormatterExtenson.swift
-//  WvhBigDates
+//  WvhExtensions
 //
 //  Created by Gardner von Holt on 7/18/21.
-//  Copyright © 2021 Gardner von Holt. All rights reserved.
+//  Copyright © 2021-2023 Gardner von Holt. All rights reserved.
 //
 
 import Foundation

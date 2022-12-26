@@ -1,8 +1,9 @@
 //
 //  TimeIntervalExtension.swift
-//  TimeIntervalExtension
+//  WvhExtensions
 //
 //  Created by Gardner von Holt on 8/6/21.
+//  Copyright © 2021-2023 Gardner von Holt. All rights reserved.
 //
 
 import Foundation

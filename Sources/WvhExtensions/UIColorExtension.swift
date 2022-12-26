@@ -1,8 +1,9 @@
 //
 //  UIColorExtension.swift
-//  UIColorExtension
+//  WvhExtensions
 //
 //  Created by Gardner von Holt on 8/20/21.
+//  Copyright © 2021-2023 Gardner von Holt. All rights reserved.
 //
 
 #if canImport(UIKit)

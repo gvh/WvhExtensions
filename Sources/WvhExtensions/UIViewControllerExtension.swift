@@ -1,8 +1,9 @@
 //
 //  UIViewControllerExtension.swift
-//  StreamerSess
+//  WvhExtensions
 //
 //  Created by Gardner von Holt on 12/19/21.
+//  Copyright © 2021-2023 Gardner von Holt. All rights reserved.
 //
 
 import UIKit

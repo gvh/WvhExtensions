@@ -1,9 +1,9 @@
 //
 //  IntExtension.swift
-//  mediatransport
+//  WvhExtensions
 //
 //  Created by Gardner von Holt on 2016/Nov/28.
-//  Copyright © 2016 Gardner von Holt. All rights reserved.
+//  Copyright © 2016-2023 Gardner von Holt. All rights reserved.
 //
 
 import Foundation

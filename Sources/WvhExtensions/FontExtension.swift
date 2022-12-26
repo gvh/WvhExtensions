@@ -1,8 +1,9 @@
 //
 //  FontExtension.swift
-//  MediaBrowserMobile
+//  WvhExtensions
 //
 //  Created by Gardner von Holt on 11/11/20.
+//  Copyright © 2020-2023 Gardner von Holt. All rights reserved.
 //
 
 #if canImport(UIKit)
