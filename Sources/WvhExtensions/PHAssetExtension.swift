@@ -5,7 +5,7 @@
 //  Created by Gardner von Holt on 2019/Jun/30.
 //  Copyright © 2019-2023 Gardner von Holt. All rights reserved.
 //
-
+#if os(tvOS)
 import Foundation
 import Photos
 
@@ -36,3 +36,4 @@ public extension PHAsset {
         }
     }
 }
+#endif
