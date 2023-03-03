@@ -18,14 +18,21 @@ public extension Date {
 
     func hmString() -> String {
         let dateFormatter = DateFormatter()
-        dateFormatter.setLocalizedDateFormatFromTemplate("HH:mm")
+        dateFormatter.setLocalizedDateFormatFromTemplate("H:mm")
+        let str = dateFormatter.string(from: self)
+        return str
+    }
+
+    func hmampmString() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.setLocalizedDateFormatFromTemplate("H:mm aaa")
         let str = dateFormatter.string(from: self)
         return str
     }
 
     func hmsString() -> String {
         let dateFormatter = DateFormatter()
-        dateFormatter.setLocalizedDateFormatFromTemplate("HH:mm:ss")
+        dateFormatter.setLocalizedDateFormatFromTemplate("H:mm:ss")
         let str = dateFormatter.string(from: self)
         return str
     }
