@@ -25,7 +25,7 @@ public extension Date {
 
     func hmampmString() -> String {
         let dateFormatter = DateFormatter()
-        dateFormatter.setLocalizedDateFormatFromTemplate("H:mm aaa")
+        dateFormatter.setLocalizedDateFormatFromTemplate("H:mm a")
         let str = dateFormatter.string(from: self)
         return str
     }
