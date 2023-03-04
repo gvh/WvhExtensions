@@ -215,4 +215,14 @@ public extension Date {
         let tempDate = dateFormatter.date(from: value!)
         return tempDate
     }
+
+    static func yymmddhhmmsszParse(value: String?) -> Date? {
+        guard value != nil else { return nil }
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        dateFormatter.locale = Locale.current
+        let tempDate = dateFormatter.date(from: value!)
+        return tempDate
+    }
 }
