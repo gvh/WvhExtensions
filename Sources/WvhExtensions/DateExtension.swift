@@ -206,11 +206,13 @@ public extension Date {
         return tempDate
     }
 
-    static func yymmddParse(value: String) -> Date? {
+    static func yymmddParse(value: String?) -> Date? {
+        guard value != nil else { return nil }
+
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         dateFormatter.locale = Locale.current
-        let tempDate = dateFormatter.date(from: value)
+        let tempDate = dateFormatter.date(from: value!)
         return tempDate
     }
 }
