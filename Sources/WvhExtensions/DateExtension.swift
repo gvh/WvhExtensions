@@ -201,9 +201,16 @@ public extension Date {
 
     func clearTime() -> Date {
         let calendar = Calendar.current
-        var components = calendar.dateComponents([.day, .month, .year], from: self)
+        let components = calendar.dateComponents([.day, .month, .year], from: self)
         let tempDate = calendar.date(from: components)!
         return tempDate
     }
 
+    static func yymmddParse(value: String) -> Date? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        dateFormatter.locale = Locale.current
+        let tempDate = dateFormatter.date(from: value)
+        return tempDate
+    }
 }
