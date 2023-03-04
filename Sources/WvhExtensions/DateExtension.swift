@@ -219,9 +219,8 @@ public extension Date {
     static func yymmddhhmmsszParse(value: String?) -> Date? {
         guard value != nil else { return nil }
 
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-        dateFormatter.locale = Locale.current
+        let dateFormatter = ISO8601DateFormatter()
+        dateFormatter.formatOptions.insert(.withFractionalSeconds)
         let tempDate = dateFormatter.date(from: value!)
         return tempDate
     }
