@@ -45,6 +45,14 @@ public extension Date {
         return formattedDate
     }
 
+    func dmmString() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "d MMMM"
+        dateFormatter.locale = Locale.current
+        let formattedDate = dateFormatter.string(from: self)
+        return formattedDate
+    }
+
     func yearString() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy"
