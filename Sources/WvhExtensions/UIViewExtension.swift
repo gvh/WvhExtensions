@@ -6,6 +6,8 @@
 //  Copyright-2023 © 2021 Gardner von Holt. All rights reserved.
 //
 
+#if canImport(UIKit)
+
 import UIKit
 
 public extension UIView {
@@ -29,3 +31,5 @@ public extension UIView {
         return view.subviews.flatMap { [$0] + getAllSubviews(view: $0) }
     }
 }
+
+#endif

@@ -6,6 +6,8 @@
 //  Copyright © 2021-2023 Gardner von Holt. All rights reserved.
 //
 
+#if canImport(UIKit)
+
 import UIKit
 
 public extension UIViewController {
@@ -29,3 +31,5 @@ public extension UIViewController {
     #endif
 
 }
+
+#endif

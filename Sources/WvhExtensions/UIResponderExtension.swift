@@ -6,6 +6,8 @@
 //  Copyright © 2021-2023 Gardner von Holt. All rights reserved.
 //
 
+#if canImport(UIKit)
+
 import UIKit
 
 @available(iOS 13.0, *)
@@ -53,3 +55,5 @@ public extension UIViewController {
         return res
     }
 }
+
+#endif
