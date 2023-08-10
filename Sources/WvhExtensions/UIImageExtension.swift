@@ -6,6 +6,7 @@
 //  Copyright © 2019-2023 Gardner von Holt. All rights reserved.
 //
 
+#if canImport(UIKit)
 import UIKit
 import CoreImage
 
@@ -233,3 +234,4 @@ public extension UIImage {
         return image
     }
 }
+#endif
