@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import AVKit
 
 public extension URL {
 
@@ -16,23 +15,6 @@ public extension URL {
         let tempDirectory = paths[0]
         let fullFileURL = tempDirectory.appendingPathComponent(fileName)
         return fullFileURL
-    }
-
-    func previewImageForLocalVideo(url: URL) -> UIImage? {
-        let asset = AVAsset(url: self)
-        let imageGenerator = AVAssetImageGenerator(asset: asset)
-        imageGenerator.appliesPreferredTrackTransform = true
-
-        var time = asset.duration
-        time.value = min(time.value, 2)
-
-        do {
-            let imageRef = try imageGenerator.copyCGImage(at: time, actualTime: nil)
-            return UIImage(cgImage: imageRef)
-        } catch let error as NSError {
-            print("Image generation failed with error \(error)")
-            return nil
-        }
     }
 
     func params() -> [String: String] {
