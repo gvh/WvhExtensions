@@ -10,8 +10,6 @@
 
 import UIKit
 
-#endif
-
 public extension UIDevice {
     static var isIPad: Bool {
         #if os(tvOS) || os(iOS)
@@ -30,3 +28,4 @@ public extension UIDevice {
 #endif
     }
 }
+#endif
