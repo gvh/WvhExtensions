@@ -138,6 +138,10 @@ public extension Date {
         return Calendar.current.date(byAdding: .minute, value: minutes, to: self)
     }
 
+    func dateByAdding(seconds: Int) -> Date? {
+        return Calendar.current.date(byAdding: .second, value: seconds, to: self)
+    }
+
     func isAfter(_ other: Date) -> Bool {
         if self > other { return true } else { return false }
     }
