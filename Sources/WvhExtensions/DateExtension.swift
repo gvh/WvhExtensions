@@ -22,6 +22,14 @@ public extension Date {
         return calendar.date(from: dateComponents)!
     }
 
+    func setMinute(minute: Int) -> Date {
+        let calendar = Calendar.current
+        var dateComponents = calendar.dateComponents([.year, .month, .day, .hour], from: self)
+        dateComponents.minute = minute
+        dateComponents.second = 0
+        return calendar.date(from: dateComponents)!
+    }
+
     func hmString() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.setLocalizedDateFormatFromTemplate("h:mm")
