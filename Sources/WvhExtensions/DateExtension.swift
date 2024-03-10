@@ -16,6 +16,12 @@ public extension Date {
         return calendar.date(from: dateComponents)!
     }
 
+    var zeroMinutes: Date {
+        let calendar = Calendar.current
+        let dateComponents = calendar.dateComponents([.year, .month, .day, .hour], from: self)
+        return calendar.date(from: dateComponents)!
+    }
+
     func hmString() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.setLocalizedDateFormatFromTemplate("h:mm")
