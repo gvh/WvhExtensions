@@ -22,6 +22,21 @@ public extension Date {
         return calendar.date(from: dateComponents)!
     }
 
+    var zeroHouea: Date {
+        let calendar = Calendar.current
+        let dateComponents = calendar.dateComponents([.year, .month, .day], from: self)
+        return calendar.date(from: dateComponents)!
+    }
+
+    func setHour(hour: Int) -> Date {
+        let calendar = Calendar.current
+        var dateComponents = calendar.dateComponents([.year, .month, .day], from: self)
+        dateComponents.hour = hour
+        dateComponents.minute = 0
+        dateComponents.second = 0
+        return calendar.date(from: dateComponents)!
+    }
+
     func setMinute(minute: Int) -> Date {
         let calendar = Calendar.current
         var dateComponents = calendar.dateComponents([.year, .month, .day, .hour], from: self)
