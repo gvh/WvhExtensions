@@ -22,7 +22,7 @@ public extension Date {
         return calendar.date(from: dateComponents)!
     }
 
-    var zeroHouea: Date {
+    var zeroHours: Date {
         let calendar = Calendar.current
         let dateComponents = calendar.dateComponents([.year, .month, .day], from: self)
         return calendar.date(from: dateComponents)!
