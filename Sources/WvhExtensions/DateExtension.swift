@@ -114,6 +114,14 @@ public extension Date {
         return formattedDate
     }
 
+    func dmyhmsString() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "d MMM yyyy HH:mm:ss"
+        dateFormatter.locale = Locale.current
+        let formattedDate = dateFormatter.string(from: self)
+        return formattedDate
+    }
+
     func dowString() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "EEEE d MMM yyyy"
