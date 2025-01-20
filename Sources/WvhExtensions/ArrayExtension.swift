@@ -30,6 +30,14 @@ public extension Array where Element: Hashable {
     var isNotEmpty: Bool {
         return !self.isEmpty
     }
+
+    func takeElements(elementCount: Int) -> Array {
+        let elementCountWork: Int =
+            (elementCount > self.count) ?
+                self.count : elementCount
+
+        return Array(self[0..<elementCountWork])
+    }
 }
 
 extension Array where Element: Equatable {
