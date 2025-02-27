@@ -69,7 +69,7 @@ public extension String {
             let results = regex.matches(in: self, options: [], range: NSRange(location: 0, length: nsString.length))
             return results.map { nsString.substring(with: $0.range)}
         } catch let error as NSError {
-            print("invalid regex: \(error.localizedDescription)")
+            print("invalid regex: \(error)")
             return []
         }
     }
@@ -289,7 +289,7 @@ public extension String {
 }
 
 public extension Array<String> {
-    static let and: String = "and".localized
+    static let and: String = "and"
 
     func oxfordJoin(delimiter: String) -> String {
         var temp: [String] = []

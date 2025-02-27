@@ -31,7 +31,7 @@ public extension URLSession {
         let task = URLSession.shared.dataTask(with: request, completionHandler: { taskData, _, error -> Void in
             data = taskData
             if data == nil, let error = error {
-                print(error.localizedDescription)
+                print("\(error)")
             }
             semaphore.signal()
         })

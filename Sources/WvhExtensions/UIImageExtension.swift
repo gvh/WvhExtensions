@@ -100,7 +100,7 @@ public extension UIImage {
                 try data.write(to: fullFileName)
                 return true
             } catch {
-                print(error.localizedDescription)
+                print("\(error)")
                 return false
             }
         }
@@ -114,7 +114,7 @@ public extension UIImage {
                 try data.write(to: fullFileName)
                 return true
             } catch {
-                print(error.localizedDescription)
+                print("\(error)")
                 return false
             }
         }
