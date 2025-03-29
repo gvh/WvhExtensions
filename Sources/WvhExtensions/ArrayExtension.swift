@@ -38,6 +38,10 @@ public extension Array where Element: Hashable {
 
         return Array(self[0..<elementCountWork])
     }
+
+    mutating func pop() -> Element? {
+        return isEmpty ? nil : removeFirst()
+    }
 }
 
 extension Array where Element: Equatable {
