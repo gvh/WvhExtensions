@@ -287,6 +287,9 @@ public extension String {
         return date
     }
 
+    func isGuid() -> Bool {
+        return String.guidPred.evaluate(with: self)
+    }
 }
 
 public extension Array<String> {
@@ -312,11 +315,4 @@ public extension Array<String> {
             return result
         }
     }
-
-    func isGuid() -> Bool {
-        return String.guidPred.evaluate(with: self)
-    }
-
-
-
 }
