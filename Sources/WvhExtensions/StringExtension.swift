@@ -10,6 +10,7 @@ import Foundation
 import CommonCrypto
 
 public extension String {
+    static let guidPred = NSPredicate(format: "SELF MATCHES %@", "((\\{|\\()?[0-9a-f]{8}-?([0-9a-f]{4}-?){3}[0-9a-f]{12}(\\}|\\))?)|(\\{(0x[0-9a-f]+,){3}\\{(0x[0-9a-f]+,){7}0x[0-9a-f]+\\}\\})")
 
     func getUrlEncoded() -> String {
         let allowedCharacterSet = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "~-_."))
@@ -311,5 +312,11 @@ public extension Array<String> {
             return result
         }
     }
+
+    func isGuid() -> Bool {
+        return String.guidPred.evaluate(with: self)
+    }
+
+
 
 }
