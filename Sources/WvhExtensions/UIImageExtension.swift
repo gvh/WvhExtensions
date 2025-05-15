@@ -234,6 +234,33 @@ public extension UIImage {
         let image: UIImage? = UIGraphicsGetImageFromCurrentImageContext()
         return image
     }
+
+    class func create(from: String, textFont: UIFont, size: CGSize, atPoint point: CGPoint,
+                           textSize: CGSize, textColor: UIColor, backgroundColor: UIColor) -> UIImage {
+        let textColor = textColor
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .center
+        let textFont = UIFont.preferredFont(forTextStyle: .title1)
+        let textFontAttributes = [NSAttributedString.Key.font: textFont,
+                                  NSAttributedString.Key.paragraphStyle: paragraphStyle,
+                                  NSAttributedString.Key.foregroundColor: textColor]
+
+        let renderer = UIGraphicsImageRenderer(size: size,
+                                               format: UIGraphicsImageRendererFormat())
+        let image = renderer.image { (context) in
+            UIColor.darkGray.setFill()
+            context.fill(CGRect(x: point.x, y: point.y, width: size.width, height: size.height))
+
+            let numLines = from.split(separator: "\n").count + 1
+            let rect: CGRect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
+            let attrString = NSAttributedString(string: from,
+                                                attributes: textFontAttributes)
+
+            attrString.draw(in: rect.insetBy(dx: 0,
+                                             dy: (rect.height - textFont.pointSize * CGFloat(numLines))/2))
+        }
+        return image
+    }
 }
 
 #endif
