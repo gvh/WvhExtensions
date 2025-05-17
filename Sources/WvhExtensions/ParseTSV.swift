@@ -7,7 +7,7 @@
 
 import Foundation
 
-class ParseTsv {
+public class ParseTsv {
     static func convertToArray(resource: String) -> [TsvRow] {
         var tsvRows: [TsvRow] = []
 
@@ -41,7 +41,7 @@ class ParseTsv {
     }
 }
 
-class TsvRow {
+public class TsvRow {
     var columns: [String: String] = [:]
     init(labelString: String, valueString: String) {
         let labels = labelString.components(separatedBy: "\t")
