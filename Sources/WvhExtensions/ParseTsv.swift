@@ -53,7 +53,7 @@ public class TsvRow {
     }
 
 
-    subscript(index: String) -> String? {
+    public subscript(index: String) -> String? {
         get {
             return columns[index]
         }
