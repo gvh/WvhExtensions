@@ -43,11 +43,23 @@ public class ParseTsv {
 
 public class TsvRow {
     var columns: [String: String] = [:]
+
     init(labelString: String, valueString: String) {
         let labels = labelString.components(separatedBy: "\t")
         let values = valueString.removeTrailing("\r").components(separatedBy: "\t")
         for colNum in 0..<labels.count where colNum < values.count {
             columns[labels[colNum]] = values[colNum]
+        }
+    }
+
+
+    subscript(index: String) -> String? {
+        get {
+            return columns[index]
+        }
+
+        set(newElm) {
+            columns[index] = newElm
         }
     }
 }
