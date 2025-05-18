@@ -8,7 +8,7 @@
 import Foundation
 
 public class ParseTsv {
-    static func convertToArray(resource: String) -> [TsvRow] {
+    public static func convertToArray(resource: String) -> [TsvRow] {
         var tsvRows: [TsvRow] = []
 
         // locate the file you want to use
