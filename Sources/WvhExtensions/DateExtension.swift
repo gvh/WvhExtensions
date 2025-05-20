@@ -293,4 +293,11 @@ public extension Date {
         let tempDate = dateFormatter.date(from: value!)
         return tempDate
     }
+
+    func yyyymmddParse(_ source: String) -> Date? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dt = dateFormatter.date(from: source)
+        return dt
+    }
 }
