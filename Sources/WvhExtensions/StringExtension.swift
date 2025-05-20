@@ -290,6 +290,13 @@ public extension String {
     func isGuid() -> Bool {
         return String.guidPred.evaluate(with: self)
     }
+
+    func yyyymmddToDate() -> Date? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dt = dateFormatter.date(from: self)
+        return dt
+    }
 }
 
 public extension Array<String> {
