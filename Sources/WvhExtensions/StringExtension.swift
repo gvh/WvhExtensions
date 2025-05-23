@@ -297,6 +297,12 @@ public extension String {
         let dt = dateFormatter.date(from: self)
         return dt
     }
+
+    func isoToDate() -> Date? {
+        let isoDateFormatter = ISO8601DateFormatter()
+        isoDateFormatter.formatOptions = [.withFullDate]  // ignores time!
+        return isoDateFormatter.date(from: self)  // returns nil, if isoString is malformed.
+    }
 }
 
 public extension Array<String> {
