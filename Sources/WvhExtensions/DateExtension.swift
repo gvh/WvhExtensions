@@ -74,6 +74,14 @@ public extension Date {
         return formattedDate
     }
 
+    func mmString() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMMM"
+        dateFormatter.locale = Locale.current
+        let formattedDate = dateFormatter.string(from: self)
+        return formattedDate
+    }
+
     func dString() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "d"
