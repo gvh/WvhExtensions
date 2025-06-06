@@ -66,6 +66,22 @@ public extension Date {
         return str
     }
 
+    func mString() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMM"
+        dateFormatter.locale = Locale.current
+        let formattedDate = dateFormatter.string(from: self)
+        return formattedDate
+    }
+
+    func dString() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "d"
+        dateFormatter.locale = Locale.current
+        let formattedDate = dateFormatter.string(from: self)
+        return formattedDate
+    }
+
     func mdString() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMM d"
