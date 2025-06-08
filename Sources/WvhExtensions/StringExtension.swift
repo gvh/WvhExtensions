@@ -224,14 +224,6 @@ public extension String {
         return escapedString
     }
 
-    subscript(range: NSRange) -> Substring {
-        if range.location == NSNotFound {
-            return ""
-        } else {
-            let swiftRange = Range(range, in: self)!
-            return self[swiftRange]
-        }
-    }
 
     /// Title-cased string is a string that has the first letter of each word capitalised (except for prepositions, articles and conjunctions)
     @available(iOS 11.0, *)
@@ -303,11 +295,53 @@ public extension String {
         isoDateFormatter.formatOptions = [.withFullDate]  // ignores time!
         return isoDateFormatter.date(from: self)  // returns nil, if isoString is malformed.
     }
+
+    subscript(range: NSRange) -> Substring {
+        get {
+            if range.location == NSNotFound {
+                return ""
+            } else {
+                let swiftRange = Range(range, in: self)!
+                return self[swiftRange]
+            }
+        }
+    }
+
+    /// Title-cased string is a string that has the first letter of each word capitalised (except for prepositions, articles and conjunctions)
+    var localizedTitleCasedString: String {
+        var newStr: String = ""
+
+        // create linguistic tagger
+        let tagger = NSLinguisticTagger(tagSchemes: [.lexicalClass], options: 0)
+        let range = NSRange(location: 0, length: self.utf16.count)
+        tagger.string = self
+
+        // enumerate linguistic tags in string
+        tagger.enumerateTags(in: range, unit: .word, scheme: .lexicalClass, options: []) { tag, tokenRange, _ in
+            let word = self[tokenRange]
+
+            guard let tag = tag else {
+                newStr.append(contentsOf: word)
+                return
+            }
+
+            // conjunctions, prepositions and articles should remain lowercased
+            if word == "VC" {
+                newStr.append(contentsOf: word)
+            } else if tag == .conjunction || tag == .preposition || tag == .determiner {
+                newStr.append(contentsOf: word.localizedLowercase)
+            } else {
+                // any other words should be capitalized
+                newStr.append(contentsOf: word.localizedCapitalized)
+            }
+        }
+        return newStr
+    }
 }
 
 public extension Array<String> {
     static let and: String = "and"
-
+    
     func oxfordJoin(delimiter: String) -> String {
         var temp: [String] = []
         temp.append(contentsOf: self)
@@ -315,7 +349,7 @@ public extension Array<String> {
             let result = ""
             return result
         }
-
+        
         let last = temp.popLast()!
         if temp.count > 1 {
             let result = temp.joined(separator: delimiter) + delimiter.trimmingCharacters(in: .whitespacesAndNewlines) + " \(Array<String>.and) " + last
@@ -328,4 +362,5 @@ public extension Array<String> {
             return result
         }
     }
+    
 }
