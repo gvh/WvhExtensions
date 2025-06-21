@@ -253,7 +253,17 @@ public extension Date {
         return Calendar.current.date(from: Calendar.current.dateComponents([.year],
                                                                            from: Calendar.current.startOfDay(for: self)))!
     }
-    
+
+    func startOfDay() -> Date {
+        return Calendar.current.startOfDay(for: self)
+    }
+
+    func endOfDay() -> Date {
+//        return Calendar.current.endOfDay(for: self)
+        let dateWork = self.dateByAdding(days: 1)!.startOfDay().dateByAdding(seconds: -1)
+        return dateWork!
+    }
+
     func endOfMonth() -> Date {
         return Calendar.current.date(byAdding: DateComponents(month: 1, day: -1), to: self.startOfMonth())!
     }
