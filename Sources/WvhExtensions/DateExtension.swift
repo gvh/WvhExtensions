@@ -263,9 +263,7 @@ public extension Date {
     }
 
     func endOfDay() -> Date {
-//        return Calendar.current.endOfDay(for: self)
-        let dateWork = self.dateByAdding(days: 1)!.startOfDay().dateByAdding(seconds: -1)
-        return dateWork!
+        return Calendar.current.endOfDay(for: self)
     }
 
     func endOfMonth() -> Date {
@@ -317,10 +315,8 @@ public extension Date {
         return tempDate
     }
     
-    func endOfDay() -> Date {
-        return Calendar.current.endOfDay(for: self)
-    }
-    
+
+
     static func yymmddParse(value: String?) -> Date? {
         guard value != nil else { return nil }
         
