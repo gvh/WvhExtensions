@@ -254,6 +254,10 @@ public extension Date {
                                                                            from: Calendar.current.startOfDay(for: self)))!
     }
 
+    func sameDayAs(_ date: Date) -> Bool {
+        return Calendar.current.isDate(self, inSameDayAs: date)
+    }
+
     func startOfDay() -> Date {
         return Calendar.current.startOfDay(for: self)
     }
