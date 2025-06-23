@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-extension Color : @retroactive Comparable {
+extension Color {
     public static func < (lhs: Color, rhs: Color) -> Bool {
         let lhsInt: Int = lhs.intForColor()
         let rhsInt: Int = rhs.intForColor()
