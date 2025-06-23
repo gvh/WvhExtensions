@@ -86,8 +86,8 @@ extension Color : @retroactive Comparable {
         }
     }
 
-    init(hex string: String) {
-        var string: String = string.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+    init(hex: String) {
+        var string: String = hex.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         if string.hasPrefix("#") {
             _ = string.removeFirst()
         }
