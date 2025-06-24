@@ -40,16 +40,18 @@ public extension UIImage {
         return image
     }
 
+    func resizeImageUsingWidth(newSize: CGSize) -> UIImage? {
+        let oldSize = self.size
+        let widthRatio = newSize.width / oldSize.width
+        return scaled(with: widthRatio)
+    }
+
     func resizeImage(newSize: CGSize) -> UIImage? {
         let oldSize = self.size
-
         let widthRatio = newSize.width / oldSize.width
         let heightRatio = newSize.height / oldSize.height
-
         let newRatio = min(widthRatio, heightRatio)
-
         return scaled(with: newRatio)
-
     }
 
     func resizeImage(_ dimension: CGFloat) -> UIImage {
