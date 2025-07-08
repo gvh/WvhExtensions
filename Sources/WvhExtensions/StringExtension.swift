@@ -337,6 +337,12 @@ public extension String {
         }
         return newStr
     }
+
+    func addNewLines() -> String {
+        let components = self.components(separatedBy: ". ")
+        let joined = components.joined(separator: ".\n\n")
+        return joined
+    }
 }
 
 public extension Array<String> {
