@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension Double {
+public extension Double {
     func displayString() -> String {
         if self - Double(Int(self)) < 0.10 {
             return String(format: "%.0f", self)
