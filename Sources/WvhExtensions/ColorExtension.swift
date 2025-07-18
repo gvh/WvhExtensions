@@ -65,6 +65,7 @@ extension Color {
         self.init(red: r, green: g, blue: b, opacity: a)
     }
 */
+    #if os(iOS)
     func toHex() -> String? {
         let uic = UIColor(self)
         guard let components = uic.cgColor.components, components.count >= 3 else {
@@ -86,7 +87,7 @@ extension Color {
             return String(format: "%02lX%02lX%02lX", lroundf(r * 255), lroundf(g * 255), lroundf(b * 255))
         }
     }
-
+    #endif
     init(hex: String) {
         var string: String = hex.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         if string.hasPrefix("#") {
