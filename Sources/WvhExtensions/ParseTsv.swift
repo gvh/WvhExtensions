@@ -8,8 +8,27 @@
 import Foundation
 
 public class ParseTsv {
-    public static func convertToArray(resource: String) -> [TsvRow] {
+
+    public static func convertToArray(data: String) -> [TsvRow] {
         var tsvRows: [TsvRow] = []
+
+        // now split that string into an array of "rows" of data.  Each row is a string.
+        var rows = data.components(separatedBy: "\n")
+
+        // if you have a header row, remove it here
+        let labelString = rows.first?.removeTrailing("\r") ?? ""
+        rows.removeFirst()
+
+        // now loop around each row, and split it into each of its columns
+        for row in rows where row.isNotEmpty {
+            let tsvRow = TsvRow(labelString: labelString, valueString: row)
+            tsvRows.append(tsvRow)
+        }
+        return tsvRows
+    }
+
+    public static func convertToArray(resource: String) -> [TsvRow] {
+        let tsvRows: [TsvRow] = []
 
         // locate the file you want to use
         guard let filepath = Bundle.main.path(forResource: resource, ofType: "tsv") else {
@@ -25,19 +44,7 @@ public class ParseTsv {
             return tsvRows
         }
 
-        // now split that string into an array of "rows" of data.  Each row is a string.
-        var rows = data.components(separatedBy: "\n")
-
-        // if you have a header row, remove it here
-        let labelString = rows.first?.removeTrailing("\r") ?? ""
-        rows.removeFirst()
-
-        // now loop around each row, and split it into each of its columns
-        for row in rows where row.isNotEmpty {
-            let tsvRow = TsvRow(labelString: labelString, valueString: row)
-            tsvRows.append(tsvRow)
-        }
-        return tsvRows
+        return ParseTsv.convertToArray(data: data)
     }
 }
 
