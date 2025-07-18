@@ -6,7 +6,9 @@
 //
 
 import SwiftUI
+#if os(iOS)
 import UIKit
+#endif
 
 extension Color {
     public static func < (lhs: Color, rhs: Color) -> Bool {
