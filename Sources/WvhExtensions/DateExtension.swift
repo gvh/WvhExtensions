@@ -44,7 +44,14 @@ public extension Date {
         dateComponents.second = 0
         return calendar.date(from: dateComponents)!
     }
-    
+
+    func yyyymmddString() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.setLocalizedDateFormatFromTemplate("yyyyMMdd")
+        let str = dateFormatter.string(from: self)
+        return str
+    }
+
     func hmString() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.setLocalizedDateFormatFromTemplate("H:mm")

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 extension Color {
     public static func < (lhs: Color, rhs: Color) -> Bool {
