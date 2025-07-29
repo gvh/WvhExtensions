@@ -343,6 +343,25 @@ public extension String {
         let joined = components.joined(separator: ".\n\n")
         return joined
     }
+
+
+    func cleanASCII() -> String {
+        var work = self.replacingOccurrences(of: "ø", with: "o")
+        work = work.replacingOccurrences(of: "é", with: "e")
+        work = work.replacingOccurrences(of: "ž", with: "z")
+        work = work.replacingOccurrences(of: "é", with: "e")
+        work = work.replacingOccurrences(of: "č", with: "c")
+        work = work.replacingOccurrences(of: "ú", with: "u")
+        work = work.replacingOccurrences(of: "ü", with: "u")
+        work = work.replacingOccurrences(of: "ł", with: "l")
+        work = work.replacingOccurrences(of: "æ", with: "ae")
+        work = work.replacingOccurrences(of: "ã", with: "a")
+        work = work.replacingOccurrences(of: "í", with: "i")
+        work = work.replacingOccurrences(of: "á", with: "a")
+        work = work.replacingOccurrences(of: "ņ", with: "n")
+        work = work.replacingOccurrences(of: "š", with: "s")
+        return work
+    }
 }
 
 public extension Array<String> {
