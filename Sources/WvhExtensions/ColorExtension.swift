@@ -91,7 +91,7 @@ extension Color {
     }
     #endif
 
-    static func create(hex: String) -> Color {
+    static public func create(hex: String) -> Color {
         var string: String = hex.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         if string.hasPrefix("#") {
             _ = string.removeFirst()
