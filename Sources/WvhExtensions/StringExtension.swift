@@ -12,13 +12,19 @@ import CommonCrypto
 public extension String {
     static let guidPred = NSPredicate(format: "SELF MATCHES %@", "((\\{|\\()?[0-9a-f]{8}-?([0-9a-f]{4}-?){3}[0-9a-f]{12}(\\}|\\))?)|(\\{(0x[0-9a-f]+,){3}\\{(0x[0-9a-f]+,){7}0x[0-9a-f]+\\}\\})")
 
+    // Cached formatter for "yyyy-MM-dd" to avoid repeated creation cost.
+    private static let yyyyMMddFormatter: DateFormatter = {
+        let df = DateFormatter()
+        df.dateFormat = "yyyy-MM-dd"
+        return df
+    }()
+
     func getUrlEncoded() -> String {
         let allowedCharacterSet = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "~-_."))
-        return self.addingPercentEncoding(withAllowedCharacters: allowedCharacterSet)!
+        return self.addingPercentEncoding(withAllowedCharacters: allowedCharacterSet) ?? self
     }
 
     func removePunctuation() -> String {
-        // All the characters to remove
         let punctuationCharacterSet = NSMutableCharacterSet.punctuationCharacters
         let arrayOfComponents = self.components(separatedBy: punctuationCharacterSet)
         let output = arrayOfComponents.joined(separator: " ")
@@ -49,9 +55,6 @@ public extension String {
         return endsWith(s)
     }
 
-    // Removed custom contains(_:) to avoid shadowing Swift's native String.contains(_:).
-    // func contains(_ find: String) -> Bool { ... }
-
     var localized: String {
         return NSLocalizedString(self, comment: "")
     }
@@ -69,7 +72,11 @@ public extension String {
             let regex = try NSRegularExpression(pattern: regex, options: [])
             let nsString = self as NSString
             let results = regex.matches(in: self, options: [], range: NSRange(location: 0, length: nsString.length))
-            return results.map { nsString.substring(with: $0.range)}
+            return results.compactMap { match in
+                let r = match.range
+                guard r.location != NSNotFound, r.location + r.length <= nsString.length else { return nil }
+                return nsString.substring(with: r)
+            }
         } catch let error as NSError {
             print("invalid regex: \(error)")
             return []
@@ -100,29 +107,22 @@ public extension String {
 
     func removeOneComponent() -> [String] {
         let workString = self.removeLeading("/").removeTrailing("/")
-        let currentIndex = workString.firstIndexOf("/")
-        if currentIndex != nil {
-            let currentIndexBefore = workString.index(before: currentIndex!)
-            let firstPathString = String(workString[...currentIndexBefore])
-            let currentIndexAfter = workString.index(after: currentIndex!)
-            let lastPathString = String(workString[currentIndexAfter...])
-            return [firstPathString, lastPathString]
-        } else {
+        guard let idx = workString.firstIndexOf("/") else {
             return [workString, ""]
         }
+        let firstPathString = String(workString[..<idx])
+        let after = workString.index(after: idx)
+        let lastPathString = String(workString[after...])
+        return [firstPathString, lastPathString]
     }
 
     func lastPathComponent() -> String {
-        var lastPath: String!
-        var currentIndex = lastIndexOf("/")
-        if currentIndex != nil {
-            currentIndex = self.index(after: currentIndex!)
-            let lastPathSubstring = self[currentIndex!...]
-            lastPath = String(lastPathSubstring)
+        if let slashIndex = lastIndexOf("/") {
+            let start = index(after: slashIndex)
+            return String(self[start...])
         } else {
-            lastPath = self
+            return self
         }
-        return lastPath
     }
 
     func lastIndexOf(_ s: String) -> Index? {
@@ -153,13 +153,8 @@ public extension String {
     }
 
     func withoutExtension() -> String {
-        let lastDotIndex = lastIndexOf(".")
-        if lastDotIndex != nil {
-            let nameSubstring = self[..<lastDotIndex!]
-            return String(nameSubstring)
-        } else {
-            return self
-        }
+        guard let lastDotIndex = lastIndexOf(".") else { return self }
+        return String(self[..<lastDotIndex])
     }
 
     var boolValue: Bool? {
@@ -176,13 +171,11 @@ public extension String {
     }
 
     func removeComments() -> String {
-        var response: String!
         if let index = self.range(of: "#")?.lowerBound {
-            response = String(self.prefix(upTo: index)).trimmingCharacters(in: .whitespaces)
+            return String(self.prefix(upTo: index)).trimmingCharacters(in: .whitespaces)
         } else {
-            response = self.trimmingCharacters(in: .whitespaces)
+            return self.trimmingCharacters(in: .whitespaces)
         }
-        return response
     }
 
     func isWord() -> Bool {
@@ -204,17 +197,13 @@ public extension String {
     }
 
     func removeLeadingString(prefix: String?) -> String {
-        guard prefix != nil else { return self }
+        guard var searchPrefix = prefix?.trimmingCharacters(in: .whitespacesAndNewlines), !searchPrefix.isEmpty else { return self }
 
-        var searchPrefix: String = prefix!.trimmingCharacters(in: .whitespacesAndNewlines)
         searchPrefix = searchPrefix.starts(with: "/") ? String(searchPrefix.dropFirst(1)) : searchPrefix
         searchPrefix = searchPrefix.endsWith("/") ? String(searchPrefix.dropLast(1)) : searchPrefix
         let source = starts(with: "/") ? String(dropFirst()) : self
         if source.starts(with: searchPrefix) {
-            var newString: String = source
-            let length = searchPrefix.count
-            newString = String(newString.dropFirst(length))
-            return newString
+            return String(source.dropFirst(searchPrefix.count))
         } else {
             return self
         }
@@ -225,17 +214,14 @@ public extension String {
         return escapedString
     }
 
-
     /// Title-cased string is a string that has the first letter of each word capitalised (except for prepositions, articles and conjunctions)
     func localizedTitleCasedString(linguistic: Bool) -> String {
         var newStr: String = ""
 
-        // create linguistic tagger
         let tagger = NSLinguisticTagger(tagSchemes: [.lexicalClass], options: 0)
         let range = NSRange(location: 0, length: self.utf16.count)
         tagger.string = self
 
-        // enumerate linguistic tags in string
         tagger.enumerateTags(in: range, unit: .word, scheme: .lexicalClass, options: []) { tag, tokenRange, _ in
             let word = self[tokenRange]
 
@@ -244,11 +230,9 @@ public extension String {
                 return
             }
 
-            // conjunctions, prepositions and articles should remain lowercased
             if linguistic == true && (tag == .conjunction || tag == .preposition || tag == .determiner) {
                 newStr.append(contentsOf: word.localizedLowercase)
             } else {
-                // any other words should be capitalized
                 newStr.append(contentsOf: word.localizedCapitalized)
             }
         }
@@ -272,28 +256,24 @@ public extension String {
         return firstIndex(of: char)?.utf16Offset(in: self)
     }
 
+    // Consolidated date parsing using a cached formatter.
     func getDate() -> Date? {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let date = dateFormatter.date (from: self)
-        return date
+        return String.yyyyMMddFormatter.date(from: self)
+    }
+
+    @available(*, deprecated, message: "Use getDate() instead. This method will be removed in a future release.")
+    func yyyymmddToDate() -> Date? {
+        return getDate()
     }
 
     func isGuid() -> Bool {
         return String.guidPred.evaluate(with: self)
     }
 
-    func yyyymmddToDate() -> Date? {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let dt = dateFormatter.date(from: self)
-        return dt
-    }
-
     func isoToDate() -> Date? {
         let isoDateFormatter = ISO8601DateFormatter()
         isoDateFormatter.formatOptions = [.withFullDate]  // ignores time!
-        return isoDateFormatter.date(from: self)  // returns nil, if isoString is malformed.
+        return isoDateFormatter.date(from: self)
     }
 
     subscript(range: NSRange) -> Substring {
@@ -310,12 +290,10 @@ public extension String {
     var localizedTitleCasedString: String {
         var newStr: String = ""
 
-        // create linguistic tagger
         let tagger = NSLinguisticTagger(tagSchemes: [.lexicalClass], options: 0)
         let range = NSRange(location: 0, length: self.utf16.count)
         tagger.string = self
 
-        // enumerate linguistic tags in string
         tagger.enumerateTags(in: range, unit: .word, scheme: .lexicalClass, options: []) { tag, tokenRange, _ in
             let word = self[tokenRange]
 
@@ -324,13 +302,11 @@ public extension String {
                 return
             }
 
-            // conjunctions, prepositions and articles should remain lowercased
             if word == "VC" {
                 newStr.append(contentsOf: word)
             } else if tag == .conjunction || tag == .preposition || tag == .determiner {
                 newStr.append(contentsOf: word.localizedLowercase)
             } else {
-                // any other words should be capitalized
                 newStr.append(contentsOf: word.localizedCapitalized)
             }
         }
@@ -390,11 +366,12 @@ public extension Array<String> {
         var temp: [String] = []
         temp.append(contentsOf: self)
         if temp.isEmpty {
-            let result = ""
-            return result
+            return ""
         }
         
-        let last = temp.popLast()!
+        guard let last = temp.popLast() else {
+            return ""
+        }
         if temp.count > 1 {
             let result = temp.joined(separator: delimiter) + delimiter.trimmingCharacters(in: .whitespacesAndNewlines) + " \(Array<String>.and) " + last
             return result
