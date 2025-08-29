@@ -33,7 +33,8 @@ public extension String {
         return self.hasPrefix(s)
     }
 
-    func beginsWith(_ c: Character) -> Bool {
+    // Renamed to avoid overload ambiguity with String-based version.
+    func beginsWithCharacter(_ c: Character) -> Bool {
         let s = String(c)
         return beginsWith(s)
     }
@@ -42,14 +43,14 @@ public extension String {
         return self.hasSuffix(s)
     }
 
-    func endsWith(_ c: Character) -> Bool {
+    // Renamed to avoid overload ambiguity with String-based version.
+    func endsWithCharacter(_ c: Character) -> Bool {
         let s = String(c)
         return endsWith(s)
     }
 
-    func contains(_ find: String) -> Bool {
-        return self.range(of: find) != nil
-    }
+    // Removed custom contains(_:) to avoid shadowing Swift's native String.contains(_:).
+    // func contains(_ find: String) -> Bool { ... }
 
     var localized: String {
         return NSLocalizedString(self, comment: "")
@@ -77,7 +78,7 @@ public extension String {
 
     func removeLeading(_ c: Character) -> String {
         var work = self
-        while work.beginsWith(c) {
+        while work.beginsWithCharacter(c) {
             work = String(work.dropFirst())
         }
         return work
@@ -85,7 +86,7 @@ public extension String {
 
     func removeTrailing(_ c: Character) -> String {
         var work = self
-        while work.endsWith(c) {
+        while work.endsWithCharacter(c) {
             work = String(work.dropLast())
         }
         return work
@@ -226,7 +227,6 @@ public extension String {
 
 
     /// Title-cased string is a string that has the first letter of each word capitalised (except for prepositions, articles and conjunctions)
-    @available(iOS 11.0, *)
     func localizedTitleCasedString(linguistic: Bool) -> String {
         var newStr: String = ""
 
@@ -298,12 +298,11 @@ public extension String {
 
     subscript(range: NSRange) -> Substring {
         get {
-            if range.location == NSNotFound {
+            guard range.location != NSNotFound,
+                  let swiftRange = Range(range, in: self) else {
                 return ""
-            } else {
-                let swiftRange = Range(range, in: self)!
-                return self[swiftRange]
             }
+            return self[swiftRange]
         }
     }
 
@@ -344,7 +343,6 @@ public extension String {
         return joined
     }
 
-
     func cleanASCII() -> String {
         var work = self.replacingOccurrences(of: "ø", with: "o")
         work = work.replacingOccurrences(of: "é", with: "e")
@@ -361,6 +359,27 @@ public extension String {
         work = work.replacingOccurrences(of: "ņ", with: "n")
         work = work.replacingOccurrences(of: "š", with: "s")
         return work
+    }
+
+    // CSV-compliant quoting:
+    // - Quote if the field contains comma, double-quote, newline, carriage return, or tab.
+    // - Escape internal quotes by doubling them per RFC 4180.
+    func quotedIfNeededCSV() -> String {
+        let s = self.trimmingCharacters(in: .whitespacesAndNewlines)
+        let needsQuoting = s.contains(",") || s.contains("\"") || s.contains("\n") || s.contains("\r") || s.contains("\t")
+        if needsQuoting {
+            let escaped = s.replacingOccurrences(of: "\"", with: "\"\"")
+            return "\"\(escaped)\""
+        } else {
+            return s
+        }
+    }
+
+    // Force-quoted variant using the same CSV-compliant escaping.
+    func quotedCSV() -> String {
+        let s = self.trimmingCharacters(in: .whitespacesAndNewlines)
+        let escaped = s.replacingOccurrences(of: "\"", with: "\"\"")
+        return "\"\(escaped)\""
     }
 }
 
