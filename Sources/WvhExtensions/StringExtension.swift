@@ -357,6 +357,25 @@ public extension String {
         let escaped = s.replacingOccurrences(of: "\"", with: "\"\"")
         return "\"\(escaped)\""
     }
+
+    func isISO8601ZuluOnly() -> Bool {
+        let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.hasSuffix("Z") else { return false }
+
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime] // still validates the rest
+        return formatter.date(from: trimmed) != nil
+    }
+
+    func isISO8601InternetDateTime() -> Bool {
+        let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.isEmpty == false else { return false }
+
+        // Note: This will reject fractional seconds unless you add .withFractionalSeconds.
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime] // yyyy-MM-dd'T'HH:mm:ssZ
+        return formatter.date(from: trimmed) != nil
+    }
 }
 
 public extension Array<String> {
