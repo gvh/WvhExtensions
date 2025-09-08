@@ -111,7 +111,15 @@ public extension Date {
         let formattedDate = dateFormatter.string(from: self)
         return formattedDate
     }
-    
+
+    func wdmString() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "EEE d MMM"
+        dateFormatter.locale = Locale.current
+        let formattedDate = dateFormatter.string(from: self)
+        return formattedDate
+    }
+
     func dmString() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "d MMM"
