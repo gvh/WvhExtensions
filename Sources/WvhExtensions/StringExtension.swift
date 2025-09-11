@@ -376,6 +376,31 @@ public extension String {
         formatter.formatOptions = [.withInternetDateTime] // yyyy-MM-dd'T'HH:mm:ssZ
         return formatter.date(from: trimmed) != nil
     }
+
+    func isAllUppercase() -> Bool {
+        return !isEmpty && allSatisfy( \.isUppercase )
+    }
+
+    /// Returns true if the string contains no lowercase letters.
+    func containsNoLowercaseLetters() -> Bool {
+        return !self.contains { $0.isLowercase }
+    }
+
+    /// Returns true if the string contains no lowercase letters, **except** for 'ß'.
+    func containsNoLowercaseLettersExceptEszett() -> Bool {
+        return !self.contains { $0.isLowercase && $0 != "ß" }
+    }
+
+    func nilIfEmpty() -> String? {
+        return self.isEmpty ? nil : self
+    }
+}
+
+public extension Optional where Wrapped == String {
+    func nilIfEmpty() -> String? {
+        guard let s = self, s.isEmpty == false else { return nil }
+        return s
+    }
 }
 
 public extension Array<String> {
