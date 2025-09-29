@@ -120,6 +120,15 @@ public extension Date {
         return formattedDate
     }
 
+    func ddhhmmString() -> String {
+        if self == .distantFuture { return "(future)" }
+        if self == .distantPast { return "(past)" }
+        let dateFormatter = DateFormatter()
+        dateFormatter.setLocalizedDateFormatFromTemplate("dd HH:mm")
+        let str = dateFormatter.string(from: self)
+        return str
+    }
+
     func dmString() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "d MMM"
