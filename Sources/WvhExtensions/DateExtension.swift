@@ -138,6 +138,15 @@ public extension Date {
         return str
     }
 
+    func ddmmhhmmString() -> String {
+        if self == .distantFuture { return "(future)" }
+        if self == .distantPast { return "(past)" }
+        let dateFormatter = DateFormatter()
+        dateFormatter.setLocalizedDateFormatFromTemplate("dd-MMM HH:mm")
+        let str = dateFormatter.string(from: self)
+        return str
+    }
+
     func dmString() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "d MMM"
