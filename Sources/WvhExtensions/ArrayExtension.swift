@@ -42,6 +42,11 @@ public extension Array where Element: Hashable {
     mutating func pop() -> Element? {
         return isEmpty ? nil : removeFirst()
     }
+
+    mutating func push(add: Element) -> Void {
+        self.insert(add, at: 0)
+    }
+
 }
 
 extension Array where Element: Equatable {
