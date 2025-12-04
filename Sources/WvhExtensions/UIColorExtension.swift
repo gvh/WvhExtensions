@@ -57,4 +57,13 @@ public extension UIColor {
         let b = CGFloat(v & 0xFF) / 255.0
         self.init(red: r, green: g, blue: b, alpha: 1.0)
     }
+
+    /// Returns sRGB components in [0, 1], or nil if conversion fails.
+    var rgbaComponents: (red: Double, green: Double, blue: Double, alpha: Double)? {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        guard getRed(&r, green: &g, blue: &b, alpha: &a) else {
+            return nil
+        }
+        return (Double(r), Double(g), Double(b), Double(a))
+    }
 }

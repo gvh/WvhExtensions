@@ -48,4 +48,15 @@ public extension Data {
             append(data)
         }
     }
+
+    ///
+    ///
+    ///
+    func getHourMinute() -> HourMinute {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.hour, .minute], from: Date())
+        print("\(components.hour ?? 0):\(components.minute ?? 0)")
+        let hourMinute = HourMinute(hour: components.hour!, minute: components.minute!)
+        return hourMinute
+    }
 }
