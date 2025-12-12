@@ -371,8 +371,6 @@ public extension Date {
         let tempDate = calendar.date(from: components)!
         return tempDate
     }
-    
-
 
     static func yymmddParse(value: String?) -> Date? {
         guard value != nil else { return nil }
