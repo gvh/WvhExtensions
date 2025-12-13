@@ -55,7 +55,7 @@ public struct HourMinute: Codable, Comparable, Sendable, Equatable {
         return lhs == rhsHourMinute
     }
 
-    func toString() -> String {
+    public func toString() -> String {
         return "\(self.hour):\(self.minute)"
     }
 }
