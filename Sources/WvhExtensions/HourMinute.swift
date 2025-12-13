@@ -27,12 +27,9 @@ public struct HourMinute: Codable, Comparable, Sendable, Equatable {
     }
 
     public var today: Date {
-        let todayStartOfDay = Calendar.current.startOfDay(for: Date.now)
+        return Calendar.current.startOfDay(for: Date.now)
             .dateByAdding(hours: self.hour)!
             .dateByAdding(minutes: self.minute)!
-        components.hour = hour
-        components.minute = minute
-        return Calendar.current.date(byAdding: components, to: todayStartOfDay)!
     }
 
     public static func < (lhs: HourMinute, rhs: HourMinute) -> Bool {
