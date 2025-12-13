@@ -1,3 +1,10 @@
+//
+//  HourMinute.swift
+//  OnTheDaily
+//
+//  Created by Gardner von Holt on 12/3/25.
+//
+
 import Foundation
 
 public struct HourMinute: Codable, Comparable, Sendable, Equatable {
