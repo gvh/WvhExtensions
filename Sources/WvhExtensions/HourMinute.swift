@@ -26,6 +26,15 @@ public struct HourMinute: Codable, Comparable, Sendable, Equatable {
         self.minute = Calendar.current.component(.minute, from: Date())
     }
 
+    public var today: Date {
+        let todayStartOfDay = Calendar.current.startOfDay(for: Date.now)
+            .dateByAdding(hours: self.hour)!
+            .dateByAdding(minutes: self.minute)!
+        components.hour = hour
+        components.minute = minute
+        return Calendar.current.date(byAdding: components, to: todayStartOfDay)!
+    }
+
     public static func < (lhs: HourMinute, rhs: HourMinute) -> Bool {
         if lhs.hour != rhs.hour { return lhs.hour < rhs.hour }
         return lhs.minute < rhs.minute
