@@ -9,7 +9,7 @@
 import Foundation
 import OSLog
 
-class DatabaseManager {
+public class DatabaseManager {
 
     private static let subsystem = Bundle.main.bundleIdentifier ?? "com.app"
     private static let logger = Logger(subsystem: subsystem, category: "DatabaseManager")
@@ -26,7 +26,7 @@ class DatabaseManager {
     ///              When `optional` is true a 404 response is not treated as an error.
     ///   - progressCallback: Called on MainActor with a 0–1 fraction and a status string.
     @MainActor
-    static func updateDatabases(
+    public static func updateDatabases(
         from baseURL: String,
         files: [(name: String, optional: Bool)],
         progressCallback: (@MainActor @Sendable (Double, String) -> Void)? = nil
