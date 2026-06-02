@@ -10,14 +10,14 @@ import Foundation
 import OSLog
 
 public class DatabaseManager {
-
+    
     private static let subsystem = Bundle.main.bundleIdentifier ?? "com.app"
     private static let logger = Logger(subsystem: subsystem, category: "DatabaseManager")
-
+    
     private static let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-
+    
     // MARK: - Public API
-
+    
     /// Download a list of files from `baseURL` if the server has newer versions.
     ///
     /// - Parameters:
@@ -31,15 +31,15 @@ public class DatabaseManager {
         files: [(name: String, optional: Bool)],
         progressCallback: (@MainActor @Sendable (Double, String) -> Void)? = nil
     ) async -> Bool {
-
+        
         guard !files.isEmpty else {
             progressCallback?(1.0, "Nothing to download")
             return true
         }
-
+        
         let slotWidth = 1.0 / Double(files.count)
         var success = true
-
+        
         for (index, file) in files.enumerated() {
             let baseProgress = Double(index) * slotWidth
             progressCallback?(baseProgress, "Checking \(file.name)...")
@@ -55,18 +55,18 @@ public class DatabaseManager {
                 success = false
             }
         }
-
+        
         progressCallback?(1.0, "Download complete")
         return success
     }
-
-//    /// Returns true if the main database exists locally and appears valid.
-//    static func databasesExist() -> Bool {
-//        return FileManager.default.fileExists(atPath: mainDBPath.path)
-//    }
-
+    
+    //    /// Returns true if the main database exists locally and appears valid.
+    //    static func databasesExist() -> Bool {
+    //        return FileManager.default.fileExists(atPath: mainDBPath.path)
+    //    }
+    
     // MARK: - Private
-
+    
     @MainActor
     private static func downloadIfNeeded(
         name: String,
@@ -76,101 +76,112 @@ public class DatabaseManager {
         slotWidth: Double,
         progressCallback: (@MainActor @Sendable (Double, String) -> Void)?
     ) async -> Bool {
-
+        
         guard let remoteURL = URL(string: baseURL + name) else {
             logger.error("Invalid URL for \(name)")
             return false
         }
-
+        
         let localPath = documentsDirectory.appendingPathComponent(name)
-
+        
         let localModDate = try? FileManager.default.attributesOfItem(
             atPath: localPath.path)[.modificationDate] as? Date
         let localFileSize = (try? FileManager.default.attributesOfItem(
             atPath: localPath.path)[.size] as? Int) ?? 0
         let localFileIsValid = localFileSize > 4096
-
-        do {
-            // HEAD request — check Last-Modified and Content-Length
-            var headRequest = URLRequest(url: remoteURL)
-            headRequest.httpMethod = "HEAD"
-            let (_, headResponse) = try await URLSession.shared.data(for: headRequest)
-
-            guard let http = headResponse as? HTTPURLResponse else {
-                logger.error("Invalid HEAD response for \(name)")
-                return false
-            }
-
-            if http.statusCode == 404 && optional {
-                logger.info("\(name) not on server yet (optional, skipping)")
-                return true
-            }
-            guard http.statusCode == 200 else {
-                logger.error("\(name) HEAD returned HTTP \(http.statusCode)")
-                return false
-            }
-
-            let expectedBytes = Int(http.value(forHTTPHeaderField: "Content-Length") ?? "") ?? 0
-
-            // Decide whether to download
-            var shouldDownload: Bool
-            if let serverModDate = http.value(forHTTPHeaderField: "Last-Modified")
-                .flatMap(DateFormatter.httpDateFormatter.date(from:)) {
-                if let localDate = localModDate, localFileIsValid {
-                    shouldDownload = serverModDate > localDate
-                    if shouldDownload {
-                        logger.info("\(name) server newer (server: \(serverModDate), local: \(localDate))")
+        
+        for attempt in 1...3 {
+            do {
+                // HEAD request — check Last-Modified and Content-Length
+                var headRequest = URLRequest(url: remoteURL)
+                headRequest.httpMethod = "HEAD"
+                let (_, headResponse) = try await URLSession.shared.data(for: headRequest)
+                
+                guard let http = headResponse as? HTTPURLResponse else {
+                    logger.error("Invalid HEAD response for \(name)")
+                    return false
+                }
+                
+                if http.statusCode == 404 && optional {
+                    logger.info("\(name) not on server yet (optional, skipping)")
+                    return true
+                }
+                guard http.statusCode == 200 else {
+                    logger.error("\(name) HEAD returned HTTP \(http.statusCode)")
+                    return false
+                }
+                
+                let expectedBytes = Int(http.value(forHTTPHeaderField: "Content-Length") ?? "") ?? 0
+                
+                // Decide whether to download
+                var shouldDownload: Bool
+                if let serverModDate = http.value(forHTTPHeaderField: "Last-Modified")
+                    .flatMap(DateFormatter.httpDateFormatter.date(from:)) {
+                    if let localDate = localModDate, localFileIsValid {
+                        shouldDownload = serverModDate > localDate
+                        if shouldDownload {
+                            logger.info("\(name) server newer (server: \(serverModDate), local: \(localDate))")
+                        }
+                    } else {
+                        shouldDownload = true
+                        logger.info("\(name) not found locally or invalid — will download")
                     }
                 } else {
-                    shouldDownload = true
-                    logger.info("\(name) not found locally or invalid — will download")
+                    shouldDownload = !localFileIsValid
                 }
-            } else {
-                shouldDownload = !localFileIsValid
-            }
-
-            guard shouldDownload else {
-                logger.info("\(name) is up to date")
+                
+                guard shouldDownload else {
+                    logger.info("\(name) is up to date")
+                    return true
+                }
+                
+                // Download with real byte-level progress via URLSessionDownloadDelegate.
+                // URLSession streams to a temp file internally — no byte-by-byte overhead.
+                progressCallback?(baseProgress, "Downloading \(name) 0%...")
+                logger.info("Downloading \(name) (expected \(expectedBytes) bytes)...")
+                
+                let delegate = DownloadProgressDelegate { fraction in
+                    Task { @MainActor in
+                        progressCallback?(
+                            baseProgress + fraction * slotWidth * 0.9,
+                            "Downloading \(name) \(Int(fraction * 100))%..."
+                        )
+                    }
+                }
+                
+                let config = URLSessionConfiguration.default
+                config.timeoutIntervalForRequest = 120
+                let session = URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
+                let (tempURL, dlResponse) = try await session.download(from: remoteURL)
+                
+                guard let dlHttp = dlResponse as? HTTPURLResponse, dlHttp.statusCode == 200 else {
+                    logger.error("Failed to download \(name)")
+                    return false
+                }
+                
+                progressCallback?(baseProgress + slotWidth * 0.92, "Saving \(name)...")
+                
+                // Move URLSession's temp file to final location atomically.
+                if FileManager.default.fileExists(atPath: localPath.path) {
+                    try FileManager.default.removeItem(at: localPath)
+                }
+                try FileManager.default.moveItem(at: tempURL, to: localPath)
+                
+                let savedSize = (try? FileManager.default.attributesOfItem(atPath: localPath.path)[.size] as? Int) ?? 0
+                progressCallback?(baseProgress + slotWidth, "Saved \(name)")
+                logger.info("Downloaded \(name) — \(savedSize) bytes")
                 return true
-            }
-
-            // Download with real byte-level progress via URLSessionDownloadDelegate.
-            // URLSession streams to a temp file internally — no byte-by-byte overhead.
-            progressCallback?(baseProgress, "Downloading \(name) 0%...")
-            logger.info("Downloading \(name) (expected \(expectedBytes) bytes)...")
-
-            let delegate = DownloadProgressDelegate { fraction in
-                Task { @MainActor in
-                    progressCallback?(
-                        baseProgress + fraction * slotWidth * 0.9,
-                        "Downloading \(name) \(Int(fraction * 100))%..."
-                    )
+            } catch {
+                if attempt < 3 {
+                    logger.warning("Error updating \(name) (attempt \(attempt)/3): \(error.localizedDescription) — retrying in 2s")
+                    try? await Task.sleep(nanoseconds: 2_000_000_000)
+                } else {
+                    logger.error("Error updating \(name) after 3 attempts: \(error.localizedDescription)")
+                    return FileManager.default.fileExists(atPath: localPath.path)
                 }
             }
-
-            let (tempURL, dlResponse) = try await URLSession.shared.download(from: remoteURL, delegate: delegate)
-            guard let dlHttp = dlResponse as? HTTPURLResponse, dlHttp.statusCode == 200 else {
-                logger.error("Failed to download \(name)")
-                return false
-            }
-
-            progressCallback?(baseProgress + slotWidth * 0.92, "Saving \(name)...")
-
-            // Move URLSession's temp file to final location atomically.
-            if FileManager.default.fileExists(atPath: localPath.path) {
-                try FileManager.default.removeItem(at: localPath)
-            }
-            try FileManager.default.moveItem(at: tempURL, to: localPath)
-
-            let savedSize = (try? FileManager.default.attributesOfItem(atPath: localPath.path)[.size] as? Int) ?? 0
-            progressCallback?(baseProgress + slotWidth, "Saved \(name)")
-            logger.info("Downloaded \(name) — \(savedSize) bytes")
-            return true
-
-        } catch {
-            logger.error("Error updating \(name): \(error.localizedDescription)")
-            return FileManager.default.fileExists(atPath: localPath.path)
         }
+        return FileManager.default.fileExists(atPath: localPath.path)
     }
 }
 
