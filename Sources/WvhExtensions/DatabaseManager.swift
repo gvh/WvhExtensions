@@ -202,15 +202,12 @@ public class DatabaseManager {
 private final class DownloadProgressDelegate: NSObject, URLSessionTaskDelegate, URLSessionDownloadDelegate {
     private let onProgress: (Double) -> Void
     private let expectedBytes: Int64
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.app", category: "DatabaseManager")
-    private var didWriteDataCallCount: Int = 0
     var continuation: CheckedContinuation<(URL, URLResponse), Error>?
 
     init(expectedBytes: Int64, onProgress: @escaping (Double) -> Void) {
         self.expectedBytes = expectedBytes
         self.onProgress = onProgress
         super.init()
-        logger.info("DownloadProgressDelegate created, expectedBytes=\(expectedBytes, privacy: .public)")
     }
 
     func urlSession(
@@ -222,11 +219,8 @@ private final class DownloadProgressDelegate: NSObject, URLSessionTaskDelegate, 
     ) {
         let total = totalBytesExpectedToWrite > 0 ? totalBytesExpectedToWrite : expectedBytes
         guard total > 0 else { return }
-        didWriteDataCallCount += 1
         let fraction = Double(totalBytesWritten) / Double(total)
         let pct = Int(fraction * 100)
-        logger.info("didWriteData #\(self.didWriteDataCallCount, privacy: .public): totalBytesWritten=\(totalBytesWritten, privacy: .public) total=\(total, privacy: .public) pct=\(pct, privacy: .public)%")
-        logger.info("didWriteData #\(self.didWriteDataCallCount, privacy: .public): calling onProgress(\(fraction, privacy: .public))")
         onProgress(fraction)
     }
 
@@ -235,7 +229,6 @@ private final class DownloadProgressDelegate: NSObject, URLSessionTaskDelegate, 
         downloadTask: URLSessionDownloadTask,
         didFinishDownloadingTo location: URL
     ) {
-        logger.info("didFinishDownloadingTo fired — total didWriteData calls: \(self.didWriteDataCallCount, privacy: .public)")
         guard let cont = continuation, let response = downloadTask.response else { return }
         continuation = nil
         // URLSession deletes the temp file when this method returns, so copy it first.
@@ -250,7 +243,6 @@ private final class DownloadProgressDelegate: NSObject, URLSessionTaskDelegate, 
     }
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        logger.info("didCompleteWithError fired — error=\(error == nil ? "nil" : error!.localizedDescription, privacy: .public) didWriteData calls: \(self.didWriteDataCallCount, privacy: .public)")
         guard let error = error, let cont = continuation else { return }
         continuation = nil
         cont.resume(throwing: error)
