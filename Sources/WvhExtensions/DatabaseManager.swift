@@ -202,6 +202,7 @@ public class DatabaseManager {
 private final class DownloadProgressDelegate: NSObject, URLSessionTaskDelegate, URLSessionDownloadDelegate {
     private let onProgress: (Double) -> Void
     private let expectedBytes: Int64
+    private var lastReportedFraction: Double = -1
     var continuation: CheckedContinuation<(URL, URLResponse), Error>?
 
     init(expectedBytes: Int64, onProgress: @escaping (Double) -> Void) {
@@ -220,7 +221,8 @@ private final class DownloadProgressDelegate: NSObject, URLSessionTaskDelegate, 
         let total = totalBytesExpectedToWrite > 0 ? totalBytesExpectedToWrite : expectedBytes
         guard total > 0 else { return }
         let fraction = Double(totalBytesWritten) / Double(total)
-        let pct = Int(fraction * 100)
+        guard fraction - lastReportedFraction >= 0.01 else { return }
+        lastReportedFraction = fraction
         onProgress(fraction)
     }
 
