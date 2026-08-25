@@ -56,16 +56,30 @@ public final class BonjourHTTPClient {
     private var discoveredEndpoint: NWEndpoint?
     private var manualEndpoint: NWEndpoint?
     private var manualHostPortString: String?
+    private let defaultEndpoint: NWEndpoint?
+    private let defaultHostPortString: String?
 
     /// - Parameters:
     ///   - bonjourType: e.g. `"_airporttracker._tcp"`.
     ///   - queueLabel: label for the browser's dispatch queue.
+    ///   - defaultHostPort: an optional `"host:port"` fallback target to use until
+    ///     discovery succeeds (or forever, if it never does) — e.g. `"localhost:8765"`
+    ///     when the client usually runs on the same machine as the service, so the very
+    ///     first request doesn't have to wait for Bonjour. Superseded by a real
+    ///     discovered endpoint or an explicit manual override, in that priority order.
     ///   - onStateChange: called on an arbitrary queue whenever discovery state changes
     ///     (searching / discovered / manual override) — hop to your own actor/queue if needed.
-    public init(bonjourType: String, queueLabel: String, onStateChange: ((State) -> Void)? = nil) {
+    public init(
+        bonjourType: String,
+        queueLabel: String,
+        defaultHostPort: String? = nil,
+        onStateChange: ((State) -> Void)? = nil
+    ) {
         self.bonjourType = bonjourType
         self.browseQueue = DispatchQueue(label: queueLabel)
         self.onStateChange = onStateChange
+        self.defaultHostPortString = defaultHostPort
+        self.defaultEndpoint = defaultHostPort.flatMap(Self.parseHostPort)
     }
 
     // MARK: - Discovery
@@ -103,15 +117,22 @@ public final class BonjourHTTPClient {
         start()
     }
 
-    /// The endpoint a new connection would currently target: the manual override if set,
-    /// otherwise the most recently discovered Bonjour endpoint (or `nil` if neither).
+    /// The endpoint a new connection would currently target, in priority order: an
+    /// explicit manual override, else the most recently discovered Bonjour endpoint,
+    /// else the `defaultHostPort` fallback given at init (or `nil` if none apply).
     public var currentEndpoint: NWEndpoint? {
         lock.lock()
         defer { lock.unlock() }
-        return manualEndpoint ?? discoveredEndpoint
+        return manualEndpoint ?? discoveredEndpoint ?? defaultEndpoint
     }
 
-    public var isDiscovered: Bool { currentEndpoint != nil }
+    /// Whether a real Bonjour endpoint or manual override is active — `false` while
+    /// only the `defaultHostPort` fallback is in play.
+    public var isDiscovered: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return manualEndpoint != nil || discoveredEndpoint != nil
+    }
 
     /// A human-readable description of the current target, for UI status display only —
     /// never used for connecting, so it carries none of the fragility `request(...)` avoids.
@@ -122,12 +143,14 @@ public final class BonjourHTTPClient {
         lock.unlock()
 
         if let manual { return manual }
-        guard let discovered else { return nil }
-        if case .service(let name, _, let domain, _) = discovered {
-            let trimmedDomain = domain.hasSuffix(".") ? String(domain.dropLast()) : domain
-            return "\(name).\(trimmedDomain)"
+        if let discovered {
+            if case .service(let name, _, let domain, _) = discovered {
+                let trimmedDomain = domain.hasSuffix(".") ? String(domain.dropLast()) : domain
+                return "\(name).\(trimmedDomain)"
+            }
+            return "\(discovered)"
         }
-        return "\(discovered)"
+        return defaultHostPortString
     }
 
     private func startBrowsing() {
