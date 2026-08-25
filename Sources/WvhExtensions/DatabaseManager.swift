@@ -317,6 +317,14 @@ private struct DatabaseHTTPError: Error {
 // MARK: - HTTP date parsing
 
 extension DateFormatter {
+    /// Parses an HTTP-date string (the format used by the `Last-Modified`,
+    /// `Retry-After`, and `Date` headers, e.g. "Sat, 06 Nov 2027 08:49:37 GMT"),
+    /// or `nil` if `string` doesn't match. Callers should not assume a specific
+    /// underlying formatter implementation — this may change in the future.
+    public static func parseHTTPDate(_ string: String) -> Date? {
+        httpDateFormatter.date(from: string)
+    }
+
     static let httpDateFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "EEE, dd MMM yyyy HH:mm:ss zzz"
