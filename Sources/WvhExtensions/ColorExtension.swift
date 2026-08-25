@@ -155,9 +155,11 @@ extension Color {
         }
     }
     
+#if os(iOS)
     /// Returns sRGB components in [0, 1], or nil if conversion fails.
     public var rgbaComponents: (red: Double, green: Double, blue: Double, alpha: Double)? {
         let ui = UIColor(self)
         return ui.rgbaComponents
     }
+#endif
 }

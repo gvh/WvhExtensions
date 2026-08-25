@@ -6,6 +6,8 @@
 //  Copyright © 2021-2023 Gardner von Holt. All rights reserved.
 //
 
+#if canImport(UIKit)
+
 import UIKit
 
 public extension UIColor {
@@ -67,3 +69,5 @@ public extension UIColor {
         return (Double(r), Double(g), Double(b), Double(a))
     }
 }
+
+#endif
