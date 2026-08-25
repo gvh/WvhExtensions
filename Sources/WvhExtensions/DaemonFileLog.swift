@@ -3,6 +3,7 @@
 //  WvhExtensions
 //
 
+#if os(macOS)
 import Foundation
 
 /// Minimal append-only line logger for a background daemon's own log file —
@@ -45,3 +46,4 @@ public final class DaemonFileLog {
         }
     }
 }
+#endif
