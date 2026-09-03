@@ -169,11 +169,15 @@ public final class BonjourHTTPClient {
         }
 
         b.browseResultsChangedHandler = { [weak self] results, _ in
-            guard let self, let result = results.first else { return }
+            guard let self else { return }
             self.lock.lock()
-            self.discoveredEndpoint = result.endpoint
+            self.discoveredEndpoint = results.first?.endpoint
             self.lock.unlock()
-            self.onStateChange?(.discovered)
+            // When the service disappears, fall back to `defaultHostPort` (if any) instead of
+            // clinging to the now-dead discovered endpoint — reconnecting to a stale `.service`
+            // reference doesn't fail fast on refusal the way a plain host:port connect does, so
+            // every reachability check would otherwise silently ride out its full timeout.
+            self.onStateChange?(results.first != nil ? .discovered : .searching)
         }
 
         b.start(queue: browseQueue)
