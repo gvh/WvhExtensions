@@ -268,6 +268,17 @@ public final class BonjourHTTPClient {
                     readLoop()
                 case .failed(let error):
                     finish(.failure(error))
+                case .waiting(let error):
+                    // `.waiting` covers genuinely transient conditions (DNS still resolving,
+                    // a brief network reconfiguration) that might self-heal — those are left
+                    // to ride out the explicit timeout below, since failing on them immediately
+                    // would spuriously reject connections that would have succeeded a moment
+                    // later. Connection refused is not one of those: nothing is listening on
+                    // that port right now, and waiting longer won't change that, so fail fast
+                    // instead of silently sitting on it until the timeout fires.
+                    if case .posix(.ECONNREFUSED) = error {
+                        finish(.failure(error))
+                    }
                 default:
                     break
                 }
