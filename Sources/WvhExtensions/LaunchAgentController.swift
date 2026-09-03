@@ -88,6 +88,33 @@ public struct LaunchAgentController {
         run("/bin/launchctl", ["print", serviceTarget]) == 0
     }
 
+    /// Whether the job's process is actually running right now, asked directly of launchd —
+    /// instant and authoritative, since this only ever targets the local machine (unlike a
+    /// network reachability probe, which has to race a Bonjour-resolved endpoint and can take
+    /// over a second to confirm a refusal). `launchctl list` includes a `"PID"` entry only
+    /// while the job is running; it's absent immediately once the job exits, including during
+    /// the brief `SIGTERMed` transition right after `stop()`.
+    public func isRunning() -> Bool {
+        runCapturingOutput("/bin/launchctl", ["list", label])?.contains("\"PID\"") ?? false
+    }
+
+    private func runCapturingOutput(_ path: String, _ args: [String]) -> String? {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: path)
+        process.arguments = args
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+        do {
+            try process.run()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            process.waitUntilExit()
+            return String(data: data, encoding: .utf8)
+        } catch {
+            return nil
+        }
+    }
+
     @discardableResult
     private func run(_ path: String, _ args: [String]) -> Int32 {
         let process = Process()
