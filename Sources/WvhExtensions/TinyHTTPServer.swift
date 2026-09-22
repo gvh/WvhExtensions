@@ -63,8 +63,9 @@ public struct HTTPResponseInfo {
 /// type owning any domain state.
 public final class TinyHTTPServer {
     public let port: NWEndpoint.Port
-    private let bonjourType: String
-    private let bonjourName: String
+    private let bindToLoopbackOnly: Bool
+    private let bonjourType: String?
+    private let bonjourName: String?
     private let handler: (HTTPRequestInfo) async -> HTTPResponseInfo
     private let onInfo: ((String) -> Void)?
     private let onError: ((String) -> Void)?
@@ -73,10 +74,18 @@ public final class TinyHTTPServer {
     private let listenerQueue: DispatchQueue
     private let connectionQueue: DispatchQueue
 
+    /// - Parameters:
+    ///   - bindToLoopbackOnly: When true, the listener only accepts connections
+    ///     from this Mac (127.0.0.1) — for a control channel meant for a
+    ///     same-machine caller, not other devices on the LAN.
+    ///   - bonjourType/bonjourName: Omit both to skip Bonjour advertisement
+    ///     entirely, e.g. for a loopback-only control channel that callers
+    ///     reach by a known port rather than discovery.
     public init(
         port: NWEndpoint.Port,
-        bonjourType: String,
-        bonjourName: String,
+        bindToLoopbackOnly: Bool = false,
+        bonjourType: String? = nil,
+        bonjourName: String? = nil,
         listenerQueueLabel: String,
         connectionQueueLabel: String,
         onInfo: ((String) -> Void)? = nil,
@@ -84,6 +93,7 @@ public final class TinyHTTPServer {
         handler: @escaping (HTTPRequestInfo) async -> HTTPResponseInfo
     ) {
         self.port = port
+        self.bindToLoopbackOnly = bindToLoopbackOnly
         self.bonjourType = bonjourType
         self.bonjourName = bonjourName
         self.onInfo = onInfo
@@ -94,18 +104,28 @@ public final class TinyHTTPServer {
     }
 
     public func start() {
-        guard let listener = try? NWListener(using: .tcp, on: port) else {
+        let parameters = NWParameters.tcp
+        if bindToLoopbackOnly {
+            _ = parameters.localEndpoint(NWEndpoint.hostPort(host: "127.0.0.1", port: port))
+        }
+        guard let listener = try? NWListener(using: parameters, on: port) else {
             onError?("failed to create listener on port \(port.rawValue)")
             return
         }
 
-        listener.service = NWListener.Service(name: bonjourName, type: bonjourType)
+        if let bonjourType, let bonjourName {
+            listener.service = NWListener.Service(name: bonjourName, type: bonjourType)
+        }
 
         listener.stateUpdateHandler = { [weak self] state in
             guard let self else { return }
             switch state {
             case .ready:
-                self.onInfo?("listening on port \(self.port.rawValue), advertising as \"\(self.bonjourName)\"")
+                if let bonjourName = self.bonjourName {
+                    self.onInfo?("listening on port \(self.port.rawValue), advertising as \"\(bonjourName)\"")
+                } else {
+                    self.onInfo?("listening on port \(self.port.rawValue) (loopback only, no Bonjour)")
+                }
             case .failed(let error):
                 self.onError?("listener failed: \(error)")
             default:
