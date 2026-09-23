@@ -27,6 +27,9 @@ build/
 Build/
 I/
 
+# SwiftPM build artifacts
+.build/
+
 *.hmap
 *.ipa
 *.xcuserstate
