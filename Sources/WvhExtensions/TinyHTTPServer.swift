@@ -150,21 +150,80 @@ public final class TinyHTTPServer {
 
     // MARK: - Connection handling
 
+    // A request whose headers+body don't all land in a single `receive()`
+    // callback — a body over ~8KB, or just bytes split across TCP segments —
+    // used to be handed to `buildResponse` truncated, since the old
+    // implementation treated the first callback's data as the whole request.
+    // This accumulates across calls until the framed message (by
+    // Content-Length, once headers are complete) is fully received.
+    private enum RequestFraming {
+        case complete(Data)
+        case incomplete
+        case malformed
+    }
+
+    private static let maxHeaderBytes = 65536
+
     private func handleConnection(_ connection: NWConnection) {
         connection.start(queue: connectionQueue)
-        connection.receive(minimumIncompleteLength: 1, maximumLength: 8192) { [weak self] data, _, isComplete, error in
+        receiveMore(on: connection, buffer: Data())
+    }
+
+    private func receiveMore(on connection: NWConnection, buffer: Data) {
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 8192) { [weak self] chunk, _, isComplete, error in
             guard let self else { return }
-            if let data, !data.isEmpty {
+            var buffer = buffer
+            if let chunk { buffer.append(chunk) }
+
+            if error != nil || (buffer.isEmpty && isComplete) {
+                connection.cancel()
+                return
+            }
+
+            switch Self.framing(of: buffer) {
+            case .complete(let requestData):
                 Task {
-                    let response = await self.buildResponse(for: data)
+                    let response = await self.buildResponse(for: requestData)
                     connection.send(content: response, completion: .contentProcessed { _ in
                         connection.cancel()
                     })
                 }
-            } else {
+            case .malformed:
                 connection.cancel()
+            case .incomplete:
+                if isComplete {
+                    // Connection closed before a full request ever arrived.
+                    connection.cancel()
+                } else {
+                    self.receiveMore(on: connection, buffer: buffer)
+                }
             }
         }
+    }
+
+    // Headers are complete once "\r\n\r\n" appears; the body (if any) is
+    // framed by Content-Length, since nothing here waits for the client to
+    // close its side of the connection.
+    private static func framing(of buffer: Data) -> RequestFraming {
+        guard let headerEnd = buffer.range(of: Data("\r\n\r\n".utf8)) else {
+            return buffer.count > maxHeaderBytes ? .malformed : .incomplete
+        }
+        let headerData = buffer[buffer.startIndex..<headerEnd.lowerBound]
+        let headerString = String(data: headerData, encoding: .utf8) ?? ""
+        let contentLength = parseContentLength(from: headerString) ?? 0
+        let bodyBytesReceived = buffer.distance(from: headerEnd.upperBound, to: buffer.endIndex)
+        return bodyBytesReceived >= contentLength ? .complete(buffer) : .incomplete
+    }
+
+    private static func parseContentLength(from headerString: String) -> Int? {
+        for line in headerString.components(separatedBy: "\r\n") {
+            let parts = line.split(separator: ":", maxSplits: 1)
+            guard parts.count == 2,
+                  String(parts[0]).trimmingCharacters(in: .whitespaces).caseInsensitiveCompare("Content-Length") == .orderedSame
+            else { continue }
+            return Int(String(parts[1]).trimmingCharacters(in: .whitespaces))
+        }
+        return nil
     }
 
     private func buildResponse(for requestData: Data) async -> Data {

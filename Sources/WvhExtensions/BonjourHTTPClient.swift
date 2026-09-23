@@ -87,13 +87,19 @@ public final class BonjourHTTPClient {
     /// Starts Bonjour browsing. No-op if a manual host override is currently set —
     /// call `clearManualHost()` first to resume discovery.
     public func start() {
-        guard manualHostPortString == nil else { return }
+        lock.lock()
+        let hasManualHost = manualHostPortString != nil
+        lock.unlock()
+        guard !hasManualHost else { return }
         startBrowsing()
     }
 
     public func stop() {
-        browser?.cancel()
+        lock.lock()
+        let current = browser
         browser = nil
+        lock.unlock()
+        current?.cancel()
     }
 
     /// Bypasses Bonjour discovery entirely and targets a fixed `"host:port"` string —
@@ -154,13 +160,18 @@ public final class BonjourHTTPClient {
     }
 
     private func startBrowsing() {
-        browser?.cancel()
+        lock.lock()
+        let previous = browser
+        lock.unlock()
+        previous?.cancel()
         onStateChange?(.searching)
 
         let params = NWParameters()
         params.includePeerToPeer = true
         let b = NWBrowser(for: .bonjourWithTXTRecord(type: bonjourType, domain: nil), using: params)
+        lock.lock()
         browser = b
+        lock.unlock()
 
         b.stateUpdateHandler = { [weak self] state in
             if case .failed = state {
