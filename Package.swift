@@ -27,5 +27,10 @@ let package = Package(
         .target(
             name: "WvhExtensions",
             dependencies: [])
-    ]
+    ],
+    // Keep compiling in Swift 5 mode despite the 6.2 manifest (needed only
+    // for .macOS(.v26)) — this package predates Swift 6 strict concurrency
+    // checking, and flipping the whole package over to it is a separate
+    // decision from unlocking one platform-version enum case.
+    swiftLanguageModes: [.v5]
 )
