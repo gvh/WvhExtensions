@@ -105,9 +105,16 @@ public final class TinyHTTPServer {
 
     public func start() {
         let parameters = NWParameters.tcp
+        // Loopback binding is macOS-only in practice (daemons/CLI tools),
+        // and NWParametersProvider.localEndpoint(_:) needs macOS 26 — which
+        // this package only requires on macOS, not iOS/tvOS. Gating by
+        // platform avoids forcing every iOS consumer up to iOS 26 for a
+        // capability they'd never use.
+        #if os(macOS)
         if bindToLoopbackOnly {
             _ = parameters.localEndpoint(NWEndpoint.hostPort(host: "127.0.0.1", port: port))
         }
+        #endif
         guard let listener = try? NWListener(using: parameters, on: port) else {
             onError?("failed to create listener on port \(port.rawValue)")
             return
