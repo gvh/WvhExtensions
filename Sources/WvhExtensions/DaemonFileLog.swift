@@ -16,7 +16,11 @@ import Foundation
 /// write queue, directory creation). Callers own formatting — timestamps,
 /// levels, categories — so each daemon's on-disk log format is unaffected by
 /// using this.
-public final class DaemonFileLog {
+///
+/// Safe to share across threads (and to hold in a `static let`): the only
+/// mutable state, `fileHandle`, is touched exclusively on `writeQueue` once
+/// `init` has returned.
+public final class DaemonFileLog: @unchecked Sendable {
     private let url: URL
     private var fileHandle: FileHandle?
     private let writeQueue: DispatchQueue
@@ -47,17 +51,38 @@ public final class DaemonFileLog {
     /// would never catch it. If the handle is missing entirely (e.g. the very
     /// first open failed — permissions, disk full) this also retries opening
     /// it on every call, instead of staying silently broken forever.
+    ///
+    /// A failed write (disk full, I/O error) drops that one line and the
+    /// handle, so the next call reopens from scratch. It never traps: the
+    /// throwing `FileHandle` APIs are used because the legacy
+    /// `seekToEndOfFile()`/`write(_:)` raise an Objective-C exception on those
+    /// errors, which Swift cannot catch — that would abort the whole daemon
+    /// over a log line.
     public func append(_ line: String) {
         guard let data = (line + "\n").data(using: .utf8) else { return }
         writeQueue.async { [weak self] in
             guard let self else { return }
             if !Self.handle(self.fileHandle, matchesFileAt: self.url) {
+                // Close the stale handle rather than leaking its descriptor on every rotation.
+                try? self.fileHandle?.close()
                 self.fileHandle = Self.openForAppending(at: self.url)
             }
             guard let fileHandle = self.fileHandle else { return }
-            fileHandle.seekToEndOfFile()
-            fileHandle.write(data)
+            do {
+                try fileHandle.seekToEnd()
+                try fileHandle.write(contentsOf: data)
+            } catch {
+                try? fileHandle.close()
+                self.fileHandle = nil
+            }
         }
+    }
+
+    /// Blocks until every line passed to `append(_:)` before this call has been
+    /// written. Call it before `exit()`: `append` is asynchronous, so a process
+    /// that exits straight after logging otherwise drops its last lines.
+    public func flush() {
+        writeQueue.sync {}
     }
 
     private static func openForAppending(at url: URL) -> FileHandle? {

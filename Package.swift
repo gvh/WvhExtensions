@@ -26,7 +26,10 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "WvhExtensions",
-            dependencies: [])
+            dependencies: []),
+        .testTarget(
+            name: "WvhExtensionsTests",
+            dependencies: ["WvhExtensions"])
     ],
     // Keep compiling in Swift 5 mode despite the 6.2 manifest (needed only
     // for .macOS(.v26)) — this package predates Swift 6 strict concurrency
