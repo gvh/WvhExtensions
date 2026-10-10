@@ -175,14 +175,12 @@ public final class TinyHTTPServer: @unchecked Sendable {
         // Whether the loopback endpoint (which carries the port) is what binds
         // the listener, instead of `on: port`.
         var portComesFromParameters = false
-        // Loopback binding is macOS-only in practice (daemons/CLI tools),
-        // and NWParametersProvider.localEndpoint(_:) needs macOS 26 — which
-        // this package only requires on macOS, not iOS/tvOS. Gating by
-        // platform avoids forcing every iOS consumer up to iOS 26 for a
-        // capability they'd never use.
+        // Loopback binding is macOS-only in practice (daemons/CLI tools).
+        // `requiredLocalEndpoint` is available on all supported macOS
+        // versions; the newer `localEndpoint(_:)` needs macOS 26.
         #if os(macOS)
         if bindToLoopbackOnly {
-            _ = parameters.localEndpoint(NWEndpoint.hostPort(host: "127.0.0.1", port: port))
+            parameters.requiredLocalEndpoint = NWEndpoint.hostPort(host: "127.0.0.1", port: port)
             portComesFromParameters = true
         }
         #endif
