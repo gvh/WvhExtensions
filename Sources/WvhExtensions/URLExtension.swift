@@ -32,12 +32,9 @@ public extension URL {
         }
     }
 
-#if os(iOS) || os(macOS)
-@available(iOS 16.0, macOS 13.0, *)
     func cacheDefeat() -> URL {
         let cacheDefeat = "\(Int(Date().timeIntervalSince1970) % 100000)"
         let url = self.appending(queryItems: [URLQueryItem(name: "z", value: cacheDefeat)])
         return url
     }
-#endif
 }

@@ -12,7 +12,7 @@ import UIKit
 
 public extension UIDevice {
     static var isIPad: Bool {
-        #if os(tvOS) || os(iOS)
+        #if os(iOS)
         UIDevice.current.userInterfaceIdiom == .pad
         #else
         false
@@ -21,7 +21,7 @@ public extension UIDevice {
 
     static var isIPhone: Bool {
         
-#if os(tvOS) || os(iOS)
+#if os(iOS)
         UIDevice.current.userInterfaceIdiom == .phone
 #else
         false

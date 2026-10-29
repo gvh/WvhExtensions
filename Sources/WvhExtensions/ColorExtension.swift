@@ -6,8 +6,10 @@
 //
 
 import SwiftUI
-#if os(iOS)
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
 #endif
 
 extension Color {
@@ -67,10 +69,18 @@ extension Color {
      self.init(red: r, green: g, blue: b, opacity: a)
      }
      */
-#if os(iOS)
+#if canImport(UIKit) || canImport(AppKit)
+    /// The color as a CGColor via whichever platform color type is available.
+    private var platformCGColor: CGColor {
+#if canImport(UIKit)
+        return UIColor(self).cgColor
+#else
+        return NSColor(self).cgColor
+#endif
+    }
+
     func toHex() -> String? {
-        let uic = UIColor(self)
-        guard let components = uic.cgColor.components, components.count >= 3 else {
+        guard let components = platformCGColor.components, components.count >= 3 else {
             return nil
         }
 
@@ -155,11 +165,17 @@ extension Color {
         }
     }
     
-#if os(iOS)
+#if canImport(UIKit)
     /// Returns sRGB components in [0, 1], or nil if conversion fails.
     public var rgbaComponents: (red: Double, green: Double, blue: Double, alpha: Double)? {
         let ui = UIColor(self)
         return ui.rgbaComponents
+    }
+#elseif canImport(AppKit)
+    /// Returns sRGB components in [0, 1], or nil if conversion fails.
+    public var rgbaComponents: (red: Double, green: Double, blue: Double, alpha: Double)? {
+        guard let c = NSColor(self).usingColorSpace(.sRGB) else { return nil }
+        return (Double(c.redComponent), Double(c.greenComponent), Double(c.blueComponent), Double(c.alphaComponent))
     }
 #endif
 }
